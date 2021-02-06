@@ -31,6 +31,7 @@ type createOpts struct {
 
 // CreateManagedContainer creates a container that is managed by a Service
 func (daemon *Daemon) CreateManagedContainer(params types.ContainerCreateConfig) (containertypes.ContainerCreateCreatedBody, error) {
+	logrus.Info("----------------------------containercreate in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	return daemon.containerCreate(createOpts{
 		params:                  params,
 		managed:                 true,
@@ -39,6 +40,7 @@ func (daemon *Daemon) CreateManagedContainer(params types.ContainerCreateConfig)
 
 // ContainerCreate creates a regular container
 func (daemon *Daemon) ContainerCreate(params types.ContainerCreateConfig) (containertypes.ContainerCreateCreatedBody, error) {
+	logrus.Info("----------------------------containercreate in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	return daemon.containerCreate(createOpts{
 		params:                  params,
 		managed:                 false,
@@ -48,6 +50,7 @@ func (daemon *Daemon) ContainerCreate(params types.ContainerCreateConfig) (conta
 // ContainerCreateIgnoreImagesArgsEscaped creates a regular container. This is called from the builder RUN case
 // and ensures that we do not take the images ArgsEscaped
 func (daemon *Daemon) ContainerCreateIgnoreImagesArgsEscaped(params types.ContainerCreateConfig) (containertypes.ContainerCreateCreatedBody, error) {
+	logrus.Info("----------------------------containercreate in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	return daemon.containerCreate(createOpts{
 		params:                  params,
 		managed:                 false,
@@ -223,6 +226,7 @@ func (daemon *Daemon) create(opts createOpts) (retC *container.Container, retErr
 	}
 	stateCtr.set(ctr.ID, "stopped")
 	daemon.LogContainerEvent(ctr, "create")
+	logrus.Info("----------------------------containercreate in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	return ctr, nil
 }
 

@@ -15,6 +15,9 @@ import (
 
 // ContainerStart starts a container.
 func (daemon *Daemon) ContainerStart(name string, hostConfig *containertypes.HostConfig, checkpoint string, checkpointDir string) error {
+	//logrus.Debug("----------------------------containerstart in start.go")
+	//logrus.Info("start.go  %v",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+	logrus.Info("----------------------------containerstart in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if checkpoint != "" && !daemon.HasExperimental() {
 		return errdefs.InvalidParameter(errors.New("checkpoint is only supported in experimental mode"))
 	}
@@ -219,7 +222,7 @@ func (daemon *Daemon) containerStart(container *container.Container, checkpoint 
 
 	daemon.LogContainerEvent(container, "start")
 	containerActions.WithValues("start").UpdateSince(start)
-
+	logrus.Info("----------------------------containerstart in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	return nil
 }
 

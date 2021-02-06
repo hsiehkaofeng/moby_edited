@@ -946,6 +946,8 @@ func NewDaemon(ctx context.Context, config *config.Config, pluginStore *plugin.S
 		grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(defaults.DefaultMaxSendMsgSize)),
 	}
 	if config.ContainerdAddr != "" {
+		fmt.Println("test1")
+		logrus.Info("test1")
 		d.containerdCli, err = containerd.New(config.ContainerdAddr, containerd.WithDefaultNamespace(config.ContainerdNamespace), containerd.WithDialOpts(gopts), containerd.WithTimeout(60*time.Second))
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to dial %q", config.ContainerdAddr)
@@ -958,6 +960,8 @@ func NewDaemon(ctx context.Context, config *config.Config, pluginStore *plugin.S
 		// Windows is not currently using containerd, keep the
 		// client as nil
 		if config.ContainerdAddr != "" {
+			fmt.Println("test2")
+			logrus.Info("test2")
 			pluginCli, err = containerd.New(config.ContainerdAddr, containerd.WithDefaultNamespace(config.ContainerdPluginNamespace), containerd.WithDialOpts(gopts), containerd.WithTimeout(60*time.Second))
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to dial %q", config.ContainerdAddr)
@@ -1138,7 +1142,8 @@ func NewDaemon(ctx context.Context, config *config.Config, pluginStore *plugin.S
 	d.imageService = images.NewImageService(imgSvcConfig)
 
 	go d.execCommandGC()
-
+	fmt.Println("test3")
+	logrus.Info("test3")
 	d.containerd, err = libcontainerd.NewClient(ctx, d.containerdCli, filepath.Join(config.ExecRoot, "containerd"), config.ContainerdNamespace, d)
 	if err != nil {
 		return nil, err
