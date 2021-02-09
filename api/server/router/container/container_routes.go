@@ -217,6 +217,7 @@ func (s *containerRouter) postContainersStart(ctx context.Context, w http.Respon
 }
 
 func (s *containerRouter) postContainersStop(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	logrus.Info("----------------------------PostcontainersStop in container_routes.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := httputils.ParseForm(r); err != nil {
 		return err
 	}
@@ -239,6 +240,7 @@ func (s *containerRouter) postContainersStop(ctx context.Context, w http.Respons
 }
 
 func (s *containerRouter) postContainersKill(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	logrus.Info("----------------------------PostcontainersKill in container_routes.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := httputils.ParseForm(r); err != nil {
 		return err
 	}
@@ -274,6 +276,7 @@ func (s *containerRouter) postContainersKill(ctx context.Context, w http.Respons
 }
 
 func (s *containerRouter) postContainersRestart(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	logrus.Info("----------------------------PostcontainersRestart in container_routes.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := httputils.ParseForm(r); err != nil {
 		return err
 	}
@@ -297,6 +300,7 @@ func (s *containerRouter) postContainersRestart(ctx context.Context, w http.Resp
 }
 
 func (s *containerRouter) postContainersPause(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	logrus.Info("----------------------------PostcontainersPause in container_routes.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := httputils.ParseForm(r); err != nil {
 		return err
 	}
@@ -311,6 +315,7 @@ func (s *containerRouter) postContainersPause(ctx context.Context, w http.Respon
 }
 
 func (s *containerRouter) postContainersUnpause(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	logrus.Info("----------------------------PostcontainersUnpause in container_routes.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := httputils.ParseForm(r); err != nil {
 		return err
 	}

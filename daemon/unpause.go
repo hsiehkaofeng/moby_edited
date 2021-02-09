@@ -3,13 +3,14 @@ package daemon // import "github.com/docker/docker/daemon"
 import (
 	"context"
 	"fmt"
-
+	"time"
 	"github.com/docker/docker/container"
 	"github.com/sirupsen/logrus"
 )
 
 // ContainerUnpause unpauses a container
 func (daemon *Daemon) ContainerUnpause(name string) error {
+	logrus.Info("----------------------------containerUnpause in unpause.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	ctr, err := daemon.GetContainer(name)
 	if err != nil {
 		return err
@@ -39,6 +40,6 @@ func (daemon *Daemon) containerUnpause(ctr *container.Container) error {
 	if err := ctr.CheckpointTo(daemon.containersReplica); err != nil {
 		logrus.WithError(err).Warn("could not save container to disk")
 	}
-
+	logrus.Info("----------------------------containerUnpause in unpause.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	return nil
 }
