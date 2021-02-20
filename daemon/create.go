@@ -191,39 +191,58 @@ func (daemon *Daemon) create(opts createOpts) (retC *container.Container, retErr
 	ctr.HostConfig.StorageOpt = opts.params.HostConfig.StorageOpt
 
 	// Set RWLayer for container after mount labels have been set
+	logrus.Info("----------------------------CreateLayer in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	rwLayer, err := daemon.imageService.CreateLayer(ctr, setupInitLayer(daemon.idMapping))
+	logrus.Info("----------------------------CreateLayer in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err != nil {
 		return nil, errdefs.System(err)
 	}
 	ctr.RWLayer = rwLayer
 
+	logrus.Info("----------------------------MkdirAndChown in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := idtools.MkdirAndChown(ctr.Root, 0701, idtools.CurrentIdentity()); err != nil {
 		return nil, err
 	}
 	if err := idtools.MkdirAndChown(ctr.CheckpointDir(), 0700, idtools.CurrentIdentity()); err != nil {
 		return nil, err
 	}
-
+	logrus.Info("----------------------------MkdirAndChown in create.go ends at  ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+	
+	logrus.Info("----------------------------setHostConfig in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := daemon.setHostConfig(ctr, opts.params.HostConfig); err != nil {
 		return nil, err
 	}
+	logrus.Info("----------------------------setHostConfig in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------createContainerOSSpecificSettings in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))	
 	if err := daemon.createContainerOSSpecificSettings(ctr, opts.params.Config, opts.params.HostConfig); err != nil {
 		return nil, err
 	}
+	logrus.Info("----------------------------createContainerOSSpecificSettings in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------endpointsConfigs in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))		
 	var endpointsConfigs map[string]*networktypes.EndpointSettings
 	if opts.params.NetworkingConfig != nil {
 		endpointsConfigs = opts.params.NetworkingConfig.EndpointsConfig
 	}
+	logrus.Info("----------------------------endpointsConfigs in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))	
+	
+	logrus.Info("----------------------------SetDefaultNetModeIfBlank in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	// Make sure NetworkMode has an acceptable value. We do this to ensure
 	// backwards API compatibility.
 	runconfig.SetDefaultNetModeIfBlank(ctr.HostConfig)
+	logrus.Info("----------------------------SetDefaultNetModeIfBlank in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------updateContainerNetworkSettings in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	daemon.updateContainerNetworkSettings(ctr, endpointsConfigs)
+	logrus.Info("----------------------------updateContainerNetworkSettings in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+	
+	logrus.Info("----------------------------Register in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))	
 	if err := daemon.Register(ctr); err != nil {
 		return nil, err
 	}
+	logrus.Info("----------------------------Register in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+
 	stateCtr.set(ctr.ID, "stopped")
 	daemon.LogContainerEvent(ctr, "create")
 	logrus.Info("----------------------------containercreate in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
