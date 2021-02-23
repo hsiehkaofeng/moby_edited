@@ -543,6 +543,7 @@ func (s *containerRouter) postContainersCreate(ctx context.Context, w http.Respo
 }
 
 func (s *containerRouter) deleteContainers(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	logrus.Info("----------------------------deleteContainers in container_routes.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := httputils.ParseForm(r); err != nil {
 		return err
 	}

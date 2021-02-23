@@ -25,6 +25,7 @@ func (daemon *Daemon) setStateCounter(c *container.Container) {
 }
 
 func (daemon *Daemon) handleContainerExit(c *container.Container, e *libcontainerdtypes.EventInfo) error {
+	logrus.Info("----------------------------handleContainerExit in monitor.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	c.Lock()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	ec, et, err := daemon.containerd.DeleteTask(ctx, c.ID)
@@ -69,7 +70,9 @@ func (daemon *Daemon) handleContainerExit(c *container.Container, e *libcontaine
 		"exitCode": strconv.Itoa(int(ec)),
 	}
 	daemon.LogContainerEventWithAttributes(c, "die", attributes)
+	logrus.Info("----------------------------Cleanup in monitor.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	daemon.Cleanup(c)
+	logrus.Info("----------------------------Cleanup in monitor.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	daemon.setStateCounter(c)
 	cpErr := c.CheckpointTo(daemon.containersReplica)
 
@@ -98,7 +101,7 @@ func (daemon *Daemon) handleContainerExit(c *container.Container, e *libcontaine
 			}
 		}()
 	}
-
+	logrus.Info("----------------------------handleContainerExit in monitor.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	return cpErr
 }
 
@@ -126,6 +129,7 @@ func (daemon *Daemon) ProcessEvent(id string, e libcontainerdtypes.EventType, ei
 		daemon.LogContainerEvent(c, "oom")
 	case libcontainerdtypes.EventExit:
 		if int(ei.Pid) == c.Pid {
+			logrus.Info("----------------------------handleContainerExit in ProcessEvent()/monitor.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 			return daemon.handleContainerExit(c, &ei)
 		}
 

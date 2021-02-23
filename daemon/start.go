@@ -144,28 +144,37 @@ func (daemon *Daemon) containerStart(container *container.Container, checkpoint 
 			}
 		}
 	}()
-
+	logrus.Info("----------------------------conditionalMountOnStart in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := daemon.conditionalMountOnStart(container); err != nil {
 		return err
 	}
-
+	logrus.Info("----------------------------conditionalMountOnStart in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+	
+	logrus.Info("----------------------------initializeNetworking in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := daemon.initializeNetworking(container); err != nil {
 		return err
 	}
-
+	logrus.Info("----------------------------initializeNetworking in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+	
+	
+	logrus.Info("----------------------------createSpec in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	spec, err := daemon.createSpec(container)
 	if err != nil {
 		return errdefs.System(err)
 	}
+	logrus.Info("----------------------------createSpec in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
 	if resetRestartManager {
 		container.ResetRestartManager(true)
 		container.HasBeenManuallyStopped = false
 	}
 
+	logrus.Info("----------------------------saveAppArmorConfig in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := daemon.saveAppArmorConfig(container); err != nil {
 		return err
 	}
+	logrus.Info("----------------------------saveAppArmorConfig in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+
 
 	if checkpoint != "" {
 		checkpointDir, err = getCheckpointDir(checkpointDir, checkpoint, container.Name, container.ID, container.CheckpointDir(), false)
@@ -174,14 +183,19 @@ func (daemon *Daemon) containerStart(container *container.Container, checkpoint 
 		}
 	}
 
+	logrus.Info("----------------------------getLibcontainerdCreateOptions in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	shim, createOptions, err := daemon.getLibcontainerdCreateOptions(container)
 	if err != nil {
 		return err
 	}
+	logrus.Info("----------------------------getLibcontainerdCreateOptions in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
 	ctx := context.TODO()
 
+	logrus.Info("----------------------------daemon.containerd.Create in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	err = daemon.containerd.Create(ctx, container.ID, spec, shim, createOptions)
+	logrus.Info("----------------------------daemon.containerd.Create in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+
 	if err != nil {
 		if errdefs.IsConflict(err) {
 			logrus.WithError(err).WithField("container", container.ID).Error("Container not cleaned up from containerd from previous run")
@@ -197,10 +211,12 @@ func (daemon *Daemon) containerStart(container *container.Container, checkpoint 
 		}
 	}
 
-	// TODO(mlaventure): we need to specify checkpoint options here
+	// TODO(mlaventure): we need to specify checkpoint options here
+	logrus.Info("----------------------------daemon.containerd.Start in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	pid, err := daemon.containerd.Start(context.Background(), container.ID, checkpointDir,
 		container.StreamConfig.Stdin() != nil || container.Config.Tty,
 		container.InitializeStdio)
+	logrus.Info("----------------------------daemon.containerd.Start in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err != nil {
 		if err := daemon.containerd.Delete(context.Background(), container.ID); err != nil {
 			logrus.WithError(err).WithField("container", container.ID).
@@ -208,17 +224,25 @@ func (daemon *Daemon) containerStart(container *container.Container, checkpoint 
 		}
 		return translateContainerdStartErr(container.Path, container.SetExitCode, err)
 	}
-
+	logrus.Info("----------------------------SetRunning in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	container.SetRunning(pid, true)
+	logrus.Info("----------------------------SetRunning in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+	
+	logrus.Info("----------------------------setStateCounter in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	container.HasBeenStartedBefore = true
 	daemon.setStateCounter(container)
+	logrus.Info("----------------------------setStateCounter in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------initHealthMonitor in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	daemon.initHealthMonitor(container)
+	logrus.Info("----------------------------initHealthMonitor in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------CheckpointTo in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := container.CheckpointTo(daemon.containersReplica); err != nil {
 		logrus.WithError(err).WithField("container", container.ID).
 			Errorf("failed to store container")
 	}
+	logrus.Info("----------------------------CheckpointTo in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
 	daemon.LogContainerEvent(container, "start")
 	containerActions.WithValues("start").UpdateSince(start)
@@ -229,12 +253,18 @@ func (daemon *Daemon) containerStart(container *container.Container, checkpoint 
 // Cleanup releases any network resources allocated to the container along with any rules
 // around how containers are linked together.  It also unmounts the container's root filesystem.
 func (daemon *Daemon) Cleanup(container *container.Container) {
+	//logrus.Info("----------------------------Cleanup in start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+	logrus.Info("----------------------------releaseNetwork in Cleanup/start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	daemon.releaseNetwork(container)
+	logrus.Info("----------------------------releaseNetwork in Cleanup/start.go ends at  ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------UnmountIpcMount in Cleanup/start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := container.UnmountIpcMount(); err != nil {
 		logrus.Warnf("%s cleanup: failed to unmount IPC: %s", container.ID, err)
 	}
+	logrus.Info("----------------------------UnmountIpcMount in Cleanup/start.go ends at  ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------conditionalUnmountOnCleanup in Cleanup/start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := daemon.conditionalUnmountOnCleanup(container); err != nil {
 		// FIXME: remove once reference counting for graphdrivers has been refactored
 		// Ensure that all the mounts are gone
@@ -242,28 +272,43 @@ func (daemon *Daemon) Cleanup(container *container.Container) {
 			daemon.cleanupMountsByID(mountid)
 		}
 	}
+	logrus.Info("----------------------------conditionalUnmountOnCleanup in Cleanup/start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------UnmountSecrets in Cleanup/start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := container.UnmountSecrets(); err != nil {
 		logrus.Warnf("%s cleanup: failed to unmount secrets: %s", container.ID, err)
 	}
+	logrus.Info("----------------------------UnmountSecrets in Cleanup/start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------recursiveUnmount in Cleanup/start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := recursiveUnmount(container.Root); err != nil {
 		logrus.WithError(err).WithField("container", container.ID).Warn("Error while cleaning up container resource mounts.")
 	}
+	logrus.Info("----------------------------recursiveUnmount in Cleanup/start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------unregisterExecCommand in Cleanup/start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	for _, eConfig := range container.ExecCommands.Commands() {
 		daemon.unregisterExecCommand(container, eConfig)
 	}
+	logrus.Info("----------------------------unregisterExecCommand in Cleanup/start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------UnmountVolumes in Cleanup/start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if container.BaseFS != nil && container.BaseFS.Path() != "" {
 		if err := container.UnmountVolumes(daemon.LogVolumeEvent); err != nil {
 			logrus.Warnf("%s cleanup: Failed to umount volumes: %v", container.ID, err)
 		}
 	}
+	logrus.Info("----------------------------UnmountVolumes in Cleanup/start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------CancelAttachContext in Cleanup/start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	container.CancelAttachContext()
+	logrus.Info("----------------------------CancelAttachContext in Cleanup/start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+	logrus.Info("----------------------------daemon.containerd.Delete in Cleanup/start.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := daemon.containerd.Delete(context.Background(), container.ID); err != nil {
 		logrus.Errorf("%s cleanup: failed to delete container from containerd: %v", container.ID, err)
 	}
+	logrus.Info("----------------------------daemon.containerd.Delete in Cleanup/start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+
+	//logrus.Info("----------------------------Cleanup in start.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 }

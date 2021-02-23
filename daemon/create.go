@@ -164,7 +164,7 @@ func (daemon *Daemon) create(opts createOpts) (retC *container.Container, retErr
 	if os == "windows" && !opts.ignoreImagesArgsEscaped && img != nil && img.RunConfig().ArgsEscaped {
 		opts.params.Config.ArgsEscaped = true
 	}
-
+	logrus.Info("----------------------------mergeAndVerifyConfig in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))	
 	if err := daemon.mergeAndVerifyConfig(opts.params.Config, img); err != nil {
 		return nil, errdefs.InvalidParameter(err)
 	}
@@ -172,10 +172,15 @@ func (daemon *Daemon) create(opts createOpts) (retC *container.Container, retErr
 	if err := daemon.mergeAndVerifyLogConfig(&opts.params.HostConfig.LogConfig); err != nil {
 		return nil, errdefs.InvalidParameter(err)
 	}
+	logrus.Info("----------------------------mergeAndVerifyConfig in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 
+
+	logrus.Info("----------------------------newContainer in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if ctr, err = daemon.newContainer(opts.params.Name, os, opts.params.Config, opts.params.HostConfig, imgID, opts.managed); err != nil {
 		return nil, err
 	}
+	logrus.Info("----------------------------newContainer in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+
 	defer func() {
 		if retErr != nil {
 			if err := daemon.cleanupContainer(ctr, true, true); err != nil {
@@ -183,11 +188,12 @@ func (daemon *Daemon) create(opts createOpts) (retC *container.Container, retErr
 			}
 		}
 	}()
-
+	logrus.Info("----------------------------setSecurityOptions in create.go starts from ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
 	if err := daemon.setSecurityOptions(ctr, opts.params.HostConfig); err != nil {
 		return nil, err
 	}
-
+	logrus.Info("----------------------------setSecurityOptions in create.go ends at ",int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond))
+	
 	ctr.HostConfig.StorageOpt = opts.params.HostConfig.StorageOpt
 
 	// Set RWLayer for container after mount labels have been set

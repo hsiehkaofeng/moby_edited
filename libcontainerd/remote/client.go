@@ -133,6 +133,7 @@ func (c *client) Create(ctx context.Context, id string, ociSpec *specs.Spec, shi
 
 	newOpts := []containerd.NewContainerOpts{
 		containerd.WithSpec(ociSpec),
+		//containerd.WithRuntime("io.containerd.runtime.v1.linux", nil),
 		containerd.WithRuntime(shim, runtimeOptions),
 		WithBundle(bdir, ociSpec),
 	}
